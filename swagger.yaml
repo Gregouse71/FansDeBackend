@@ -1,0 +1,44 @@
+openapi: 3.0.4
+info:
+  title: Bataille NavAPI
+  description: |-
+    Une API pour jouer à la bataille navale sur un serveur
+
+  contact:
+    email: apiteam@fansdebackend.io
+  license:
+    name: GPLv3
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  version: 0.1.0
+
+tags:
+  - name: pet
+    description: Everything about your Pets
+    externalDocs:
+      description: Find out more
+      url: https://swagger.io
+  - name: play
+    description: Allows you to play a game
+  - name: watch
+    description: Allows you to watch a game played by others
+
+paths:
+  /play/create:
+    get:
+      tags:
+        - play
+      description: Creates a game
+      responses:
+        '200':
+          description: Successful creation
+          content:
+            json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    format: int64
+                    example: 10
+
+
