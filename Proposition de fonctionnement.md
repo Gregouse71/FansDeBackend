@@ -47,6 +47,13 @@ function getPlayer(request, gameID) -> 0|1|none
 // selon les valeurs des cookies que j'ai mis
 // none si le cookie n'est pas reconnu
 
+function getGameplayData(gameID) -> game_data | Error
+//raise GameNotFound si je ne trouve pas la partie
+
+function getGame(gameID) -> game_obj | Error
+//raise GameNotFound si pas existante
+//Warning : utilisez pas ça sans m'en parler, et surtout pas pour y écrire
+
 function update(request, gameID)
 //A appeler systématiquement lorsqu'il y a une activité
 //sur une partie pour pas que je la mette à la poubelle
