@@ -20,5 +20,5 @@ export const gameTable = sqliteTable("game_table", {
   p0connected: integer({mode:'boolean'}).default(false),
   p1connected: integer({mode:'boolean'}).default(false),
 
-  game_data: blob(),
+  game_data: text({mode: 'json'}),
 });
