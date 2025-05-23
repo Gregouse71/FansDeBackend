@@ -40,5 +40,21 @@ paths:
                     type: integer
                     format: int64
                     example: 10
+  /play/shoot:
+    post:
+      tags:
+       - play
+      description: Shoot on a point
+      responses:
+        '200':
+          description: Shot was at valid coordinates
+          content:
+            json:
+              schema:
+                type: object
+                properties:
+                  kill:
+                    type: boolean
+                    example: true
 
 
