@@ -58,3 +58,34 @@ paths:
                     example: true
 
 
+  /play/join:
+    get:
+      tags: 
+        - play
+      description: Allows you to join an existing game. 
+      parameters:
+        - in: query
+          name: gameId
+          schema:
+            type: string
+          required: true
+          description: The ID of the game you want to join.
+      
+      responses:
+        '200':
+          description: Connection successful
+          headers:
+            Set-Cookie: 
+              schema:
+                type: string
+              description: A UID to identify you for the current game
+        
+        '404':
+          description: The requested game has not been found
+
+        '409':
+          description: There is no place left in this game
+      
+            
+
+
