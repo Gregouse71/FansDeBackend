@@ -1,4 +1,4 @@
-import { randomUUIDv7 } from "bun"
+import { randomUUIDv7, sleep } from "bun"
 
 //Initialisation BDD
 //import 'dotenv/config';
@@ -12,13 +12,77 @@ const db = drizzle(process.env.DB_FILE_NAME);
 
 function createBlankGame() {
 	return {
-		currPlay: 1,
-		board: [
-			[1, 2],
-			[2, 3]
+		currentPlayer: 1,
+		boards : [
+			{
+				board: [
+					[-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,],
+					[-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,],
+					[-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,],
+					[-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,],
+					[-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,],
+					[-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,],
+					[-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,],
+					[-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,],
+					[-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,],
+					[-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,],
+				],
+				ships: [
+					[[1, 1, 1, 1, 1], [0, 0], 1],  // Porte avion : 5 cases, position de départ, direction du navire
+					[[1, 1, 1, 1], [0, 0], 1],     // Croiseur
+					[[1, 1, 1], [0, 0], 1],        // Contre torpilleur 1
+					[[1, 1, 1], [0, 0], 1],        // Contre torpilleur 2
+					[[1, 1], [0, 0], 1],           // Torpilleur
+				]
+			},
+			{
+				board: [
+					[-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,],
+					[-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,],
+					[-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,],
+					[-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,],
+					[-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,],
+					[-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,],
+					[-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,],
+					[-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,],
+					[-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,],
+					[-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,],
+				],
+				ships: [
+					[[1, 1, 1, 1, 1], [0, 0], 1],  // Porte avion : 5 cases, position de départ, direction du navire
+					[[1, 1, 1, 1], [0, 0], 1],     // Croiseur
+					[[1, 1, 1], [0, 0], 1],        // Contre torpilleur 1
+					[[1, 1, 1], [0, 0], 1],        // Contre torpilleur 2
+					[[1, 1], [0, 0], 1],           // Torpilleur
+				]
+			}
 		]
 	};
 }
+
+/*
+Exemple d'état d'un des joueurs
+		board: [
+			[-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,],
+			[-1,  0,  0, -1,  0,  0, -1, -1, -1, -1,],
+			[-1, -1, -1, -1, -1, -1, -1, -1,  1, -1,],
+			[-1, -1, -1, -1, -1, -1, -1, -1,  1, -1,],
+			[-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,],
+			[-1, -1, -1, -1,  4, -1, -1, -1, -1, -1,],
+			[-1, -1, -1, -1,  4, -1, -1, -1, -1, -1,],
+			[-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,],
+			[-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,],
+			[-1, -1, -1, -1, -1, -1, -1,  3,  3,  3,],
+		],
+		ships: [
+			[[1, 1, 0, 1, 1], [1, 1], 1],  // Porte avion : a perdu sa case centrale
+			[[1, 1, 0, 0],    [2, 8], 0],  // Croiseur    : a perdu toute son avant (ou arrière ?)
+			[[0, 0, 0],       [9, 0], 1],  // Contre torpilleur 1 : coulé
+			[[1, 1, 1],       [9, 7], 1],  // Contre torpilleur 2 : en pleine santé
+			[[1, 1],          [5, 3], 0],  // Torpilleur  : en pleine santé
+		]
+*/
+
 
 // class game_obj{
 // 	/**
@@ -90,6 +154,21 @@ async function getGameData(gameId) {
 	return game_data;
 }
 
+/**
+ * Updates the game identified by gameId
+ * @param request The information associated with the request, of form {"x": int, "y": int, "player": 1 or 2}
+ * @returns The http code and return info
+ */
+async function fire (request, gameId) {
+	let {x, y, player} = request;
+	if (!(0 <= x <= 9) || !(0 <= y <= 9) || !(1 <= player <= 2)) {  // Si la case n'est pas dans la grille, ou le joueur n'est pas valide
+		return 400, {}  // Bad request
+	}
+
+	state = await getGameData (gameId);
+	return 200, {"kill": false};
+}
+
 
 console.log("Defined smoothly")
 
@@ -98,9 +177,9 @@ console.log("Defined smoothly")
 ///////// TESTS ///////////
 ///////////////////////////
 
-//var id = await createGameInstance();
-console.log("Instance créée avec ID $id");
-console.log(JSON.stringify(createBlankGame()))
-const testRead = await getGameData("0196f8d6-582f-7000-9d15-d208a97d25fd")
+// var id = await createGameInstance();
+// console.log(`Instance créée avec ID ${id}`);
+// console.log(JSON.stringify(createBlankGame()))
+const testRead = await getGameData("0196fdf3-93b1-7000-93c0-5249c1710d41")
 console.log(testRead)
 console.log(typeof (testRead.currPlay))

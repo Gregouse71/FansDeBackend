@@ -5,11 +5,11 @@
   "private": true,
   "devDependencies": {
     "@libsql/client": "^0.15.7",
-    "@types/bun": "^1.2.13",
-    "drizzle-kit": "^0.31.1"
+    "@types/bun": "^1.2.14",
+    "drizzle-kit": "0.31.1"
   },
   "peerDependencies": {
-    "typescript": "^5"
+    "typescript": "^5.8.3"
   },
   "dependencies": {
     "drizzle-orm": "^0.43.1"
