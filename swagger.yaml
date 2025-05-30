@@ -38,11 +38,35 @@ paths:
                 example: 0196f8d6-582f-7000-9d15-d208a97d25fd
 
   
-  /play/shoot:
+  /play/{gameId}/fire:
     post:
       tags:
        - play
       description: Shoot on a point
+      parameters:
+        - name: gameId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 0196fdf3-93b1-7000-93c0-5249c1710d41
+      requestBody:
+        content:
+          json:
+            schema:
+              type: object
+              properties:
+                x:
+                  type: integer
+                  example: 4
+                y:
+                  type: integer
+                  example: 8
+                player:
+                  description:  uuid du joueur
+                  type: string
+                  example: 0196fdf3-93b1-7000-93c0-5249c1710d41
+
       responses:
         '200':
           description: Shot was at valid coordinates
@@ -52,6 +76,9 @@ paths:
                 type: object
                 properties:
                   kill:
+                    type: boolean
+                    example: false
+                  hit:
                     type: boolean
                     example: true
 
