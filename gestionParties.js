@@ -6,6 +6,9 @@ import { drizzle } from 'drizzle-orm/bun-sqlite';
 import { gameTable } from "./src/db/schema";
 import { eq } from "drizzle-orm";
 
+const GAME_MAX_TIME = 10800;//3h Temps en seconde avant qu'une partie soit fermée depuis sa création
+const GAME_MAX_INACTIVITY_TIME = 1200;//20 minutes
+
 const db = drizzle(process.env.DB_FILE_NAME);
 //Fin initialisation BDD
 
@@ -20,26 +23,13 @@ function createBlankGame() {
 	};
 }
 
-// class game_obj{
-// 	/**
-// 	 * 0 : waiting for the users to connect\
-// 	 * 1 : running\
-// 	 * 2 : finished
-// 	 */
-// 	status;
-// 	constructor(){
-// 		this.gameId = randomUUIDv7();
-
-// 		this.p0token= randomUUIDv7();
-// 		this.p1token= randomUUIDv7();
-// 		this.p0connected = false;
-// 		this.p1connected = false;
-
-// 		this.status = 1;
-
-// 		this.gameData = createBlankGame();
-// 	}
-// }
+class GameNotFound extends Error {
+	constructor(gameId) {
+	  super(`Game with ID ${gameId} has not been found in the database.`);
+	  this.name = this.constructor.name;
+	  this.message = `Game with ID ${gameId} has not been found in the database.`;
+	}
+  }
 
 /**
  * Create a game in the database, initialized with the content of 
@@ -72,24 +62,54 @@ async function createGameInstance() {
 }
 
 /**
- * Return the game datas associated with this ID.
+ * Return the game datas and metadatas associated with this ID. Not to be returned to the user, it contains everything.
+ * 
+ * _**For internal use only**_
  * @param {string} gameId The id of the game you want to retrieve
- * @returns The game object associated with it (not the times, nor the connection status)
+ * @returns The game object associated with it with all datas.
  */
-async function getGameData(gameId) {
-	db.update(gameTable)
+async function getGame(gameId) {
+	//On mets à jour la date de dernière action pour pouvoir faire le ménage
+	//Si cette partie est abandonnée.
+	await db.update(gameTable)
 		.set({ lastActionTime: Date.now() })
 		.where(eq(gameTable.id, gameId))
 
-	var { game_data } =
-		(
-			await db.select({ game_data: gameTable.game_data })
-				.from(gameTable)
-				.where(eq(gameTable.id, gameId))
-		)[0];
-	return game_data;
+	var selection = await db.select()
+		.from(gameTable)
+		.where(eq(gameTable.id, gameId));
+	
+	if (selection.length == 0){
+		throw GameNotFound;
+	}else{//Normalement on n'a qu'une seule partie qui marche
+		//Avec la façon dont on a fait les ID.
+		return selection[0];
+	}
 }
 
+/**
+ * Return the game datas associated with this ID. Not to be returned to the user, it contains all the datas.
+ * 
+ * _**For internal use only**_
+ * @param {string} gameId The id of the game you want to retrieve
+ * @returns The game object associated with it (not the times, nor the connection status)
+ */
+function getGameData(gameId){
+	return getGame(gameId).game_data;
+}
+
+/**
+ * Write the new game data into the database. It overwrite the previous state.
+ * @param {string} gameId 
+ * @param {object} new_game_data 
+ */
+async function setGameData(gameId, new_game_data){
+	await db.update(gameTable)
+	.set({ lastActionTime: Date.now(),
+		game_data: new_game_data
+	 })
+	.where(eq(gameTable.id, gameId))
+}
 
 console.log("Defined smoothly")
 
@@ -98,9 +118,16 @@ console.log("Defined smoothly")
 ///////// TESTS ///////////
 ///////////////////////////
 
-//var id = await createGameInstance();
-console.log("Instance créée avec ID $id");
+var id = await createGameInstance();
+console.log(`Instance créée avec ID ${id}`);
 console.log(JSON.stringify(createBlankGame()))
-const testRead = await getGameData("0196f8d6-582f-7000-9d15-d208a97d25fd")
+const testRead = await getGame(id)
 console.log(testRead)
-console.log(typeof (testRead.currPlay))
+console.log(testRead.lastActionTime)
+
+//test écriture
+var new_game_data = {
+	truc:[1,2,3],
+	chou:"croute"
+}
+setGameData(id, new_game_data);

@@ -10,4 +10,4 @@ Devinez pourquoi ces erreurs surviennent
                                   ^
 SQLiteError: near "=": syntax error```
 
-Et bien là, c'est que j'avais fait une requête sur une colonne qui n'existait pas.
+Et bien là, c'est que j'avais fait une requête sur une colonne qui n'existait pas. Note : il n'y avait pas de = dans mon code.

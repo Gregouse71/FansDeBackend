@@ -37,11 +37,11 @@ game_obj =
 ```
 Je pensais faire une fonction
 ```js
-// Mathis
+// Mathis - DONE
 function createGame(gameDataCreator) -> gameID
 //Ou game_data_creator est une fonction que j'appelle sans argument pour instancier gameData
 
-// Mathis
+// Zéphyr
 function join(request, gameID) -> TODO //Faut que celui qui fait la partie serveur dessous me dise comment il veut faire parce que là le but est de faire un setcookie.
 //Après ça peut être une redirection, une page direct, jsp moi.
 
@@ -50,13 +50,16 @@ function getPlayer(request, gameID) -> 0|1|none
 // selon les valeurs des cookies que j'ai mis
 // none si le cookie n'est pas reconnu
 
-
+//DONE
 function getGameplayData(gameID) -> game_data | Error
 //raise GameNotFound si je ne trouve pas la partie
-
+//DONE
 function getGame(gameID) -> game_obj | Error
 //raise GameNotFound si pas existante
 //Warning : utilisez pas ça sans m'en parler, et surtout pas pour y écrire
+//Mathis - DONE
+function setGameData(gameId, new_game_data) -> void
+
 
 // Grégoire
 function fire(request, gameID)

@@ -30,16 +30,14 @@ paths:
       description: Creates a game
       responses:
         '200':
-          description: Successful creation
+          description: ID of the created game
           content:
-            json:
+            string:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: integer
-                    format: int64
-                    example: 10
+                type: string
+                example: 0196f8d6-582f-7000-9d15-d208a97d25fd
+
+  
   /play/shoot:
     post:
       tags:
@@ -62,7 +60,7 @@ paths:
     get:
       tags: 
         - play
-      description: Allows you to join an existing game. 
+      description: A MODIFIER PAR Zéphyr !!!  Allows you to join an existing game. 
       parameters:
         - in: query
           name: gameId
