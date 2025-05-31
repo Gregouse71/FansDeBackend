@@ -4,10 +4,12 @@ import { randomUUIDv7, sleep } from "bun"
 //import 'dotenv/config';
 import { drizzle } from 'drizzle-orm/bun-sqlite';
 import { gameTable } from "./src/db/schema";
-import { eq } from "drizzle-orm";
+import { eq , lt } from "drizzle-orm";
 
-const GAME_MAX_TIME = 10800;//3h Temps en seconde avant qu'une partie soit fermée depuis sa création
-const GAME_MAX_INACTIVITY_TIME = 1200;//20 minutes
+//Temps en millisecondes
+//Inutilisée const GAME_MAX_TIME = 10800_000;//3h Temps en seconde avant qu'une partie soit fermée depuis sa création
+const GAME_MAX_INACTIVITY_TIME = 1200_000;//20 minutes
+const DELAY_BETWEEN_CHECK = 60_000;
 
 const db = drizzle(process.env.DB_FILE_NAME);
 //Fin initialisation BDD
@@ -175,6 +177,16 @@ async function setGameData(new_game_data, gameId){
 	.where(eq(gameTable.id, gameId))
 }
 
+async function removeInactiveGames(){
+	await db.delete(gameTable)
+	.where(lt(
+		gameTable.lastActionTime, // <
+		Date.now() - GAME_MAX_INACTIVITY_TIME
+	));
+	console.log("Elagage");
+}
+//A intervalles fixés, on retire les parties trop vieilles.
+setInterval(removeInactiveGames, DELAY_BETWEEN_CHECK);
 
 
 /**
