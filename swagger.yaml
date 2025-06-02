@@ -83,11 +83,11 @@ paths:
                     example: true
 
 
-  /play/join:
+  /play/join/{gameId}:
     get:
       tags: 
         - play
-      description: A MODIFIER PAR Zéphyr !!!  Allows you to join an existing game. 
+      description: Allows you to join an existing game. 
       parameters:
         - in: query
           name: gameId

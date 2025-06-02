@@ -4,7 +4,7 @@ import { randomUUIDv7 } from "bun"
 //import 'dotenv/config';
 import { drizzle } from 'drizzle-orm/bun-sqlite';
 import { gameTable } from "./src/db/schema";
-import { eq , lt } from "drizzle-orm";
+import { DrizzleError, eq , lt } from "drizzle-orm";
 import { createBlankGame } from "./interactionsJoueur";
 
 //Temps en millisecondes
@@ -53,6 +53,27 @@ export async function createGameInstance() {
 	)
 	return gameId;
 }
+
+/**
+ * Finds a game in the database, given a fixed game_id
+ * 
+ * @returns `int` : 0 if the game is found and there is room to join, 
+ * 					-1 if the game is not found, 
+ * 					-2 if the game is already full
+ */
+export async function findGameInstance(gameId) {
+	const query = await db.select().from(gameTable).where(eq(gameId, gameTable.id))
+	if (query.length == 0) return -1;
+
+	if (query.length > 1) throw DrizzleError("There are two active games with the same ID !!");
+
+	const game = query[0];
+
+	if (game.p0connected && game.p1connected) return -2;
+
+	return 0;
+}
+
 
 /**
  * Return the game datas and metadatas associated with this ID. Not to be returned to the user, it contains everything.
