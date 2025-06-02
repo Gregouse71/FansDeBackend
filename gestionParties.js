@@ -89,7 +89,7 @@ Exemple d'état d'un des joueurs
 */
 
 
-class GameNotFound extends Error {
+export class GameNotFound extends Error {
 	constructor(gameId) {
 	  super(`Game with ID ${gameId} has not been found in the database.`);
 	  this.name = this.constructor.name;
@@ -103,7 +103,7 @@ class GameNotFound extends Error {
  * It sets the players token, times and status for later use.
  * @returns `str` : the id of the created Game
  */
-async function createGameInstance() {
+export async function createGameInstance() {
 	let gameId = randomUUIDv7();
 
 	await db.insert(gameTable).values({
@@ -249,12 +249,15 @@ console.log("Defined smoothly")
 ///////// TESTS ///////////
 ///////////////////////////
 
-var id = await createGameInstance();
-console.log(`Instance créée avec ID ${id}`);
-console.log(JSON.stringify(createBlankGame()))
-const testRead = await getGame(id)
-console.log(testRead)
-console.log(testRead.lastActionTime)
+
+//Test du stockage en BDD et de la récupération de donénes.
+
+// var id = await createGameInstance();
+// console.log(`Instance créée avec ID ${id}`);
+// console.log(JSON.stringify(createBlankGame()))
+// const testRead = await getGame(id)
+// console.log(testRead)
+// console.log(testRead.lastActionTime)
 
 //test écriture
 // var new_game_data = {
