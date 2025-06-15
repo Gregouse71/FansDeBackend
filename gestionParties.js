@@ -91,7 +91,8 @@ async function getGame(gameId) {
 
 	var selection = await db.select()
 		.from(gameTable)
-		.where(eq(gameTable.id, gameId));
+		.where(eq(gameTable.id, gameId))
+	;
 	
 	if (selection.length == 0){
 		throw GameNotFound;

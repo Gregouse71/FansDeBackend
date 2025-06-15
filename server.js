@@ -2,6 +2,9 @@ import {
 	createGameInstance,
 	findGameInstance
 } from "./gestionParties.js";
+import {
+	fire
+} from "./interactionsJoueur.js";
 
 const SERVER_PORT = 8080
 
@@ -48,6 +51,20 @@ Bun.serve({
 						})
 					}
 				}
+			} catch(error) {
+				console.log(error)
+				return internalServerError;
+			}
+		},
+		"/play/:game_id/fire": async (req) => {
+			try {
+				const game_id = req.params.game_id;
+				let code, body = fire (req, game_id);
+				console.log (code, body);
+				return new Response ({
+					body: body,
+					status: code
+				});
 			} catch(error) {
 				console.log(error)
 				return internalServerError;

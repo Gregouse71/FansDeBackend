@@ -80,50 +80,56 @@ Exemple d'état d'un des joueurs
  * @param request The information associated with the request, of form {"x": int, "y": int, "player": 1 or 2}
  * @returns The http code and return info
  */
-async function fire (request, gameId) {
-	let state = await getGameData (gameId);
+export async function fire (request, gameId) {
+	try {
+		let state = getGameData (gameId);
+		console.log (`state: ${state}`);
 
-	let {x, y, player} = request;
-	if (!(0 <= x <= 9)  // Si la case n'est pas valide
-		|| !(0 <= y <= 9) // Ou si le joueur ne participe pas
-		|| (player != state.p0token && player != state.p1token)) {
-		return 400, {}  // Bad request
-	}
+		let {x, y, player} = request;
+		if (!(0 <= x <= 9)  // Si la case n'est pas valide
+			|| !(0 <= y <= 9)) { // Ou si le joueur ne participe pas
+			return 400, {"reason": "Tire pas dans la grille."}  // Bad request
+		}
 
-	let player_num = -1;  // On trouve l'indice du joueur
-	if (player == state.p0token) {
-		player_num = 0
-	} else if (player == state.p1token) {
-		player_num = 1
-	} else {
-		return 400, {}  // Bad request
-	}
+		let player_num = -1;  // On trouve l'indice du joueur
+		if (player == state.p0token) {
+			player_num = 0
+		} else if (player == state.p1token) {
+			player_num = 1
+		} else {
+			return 400, {"reason": "Joueur pas dans cette partie"}  // Bad request
+		}
 
-	// Si ce n'est pas à son tour
-	if (state.currentPlayer != player_num) {
-		return 400, {}  // Bad request
-	}
+		// Si ce n'est pas à son tour
+		if (state.currentPlayer != player_num) {
+			return 400, {"reason": "Pas à ce joueur de jouer"}  // Bad request
+		}
 
-	// Là, on va enfin pouvoir jouer
-	state.currentPlayer = 1 - player_num
-	let navire_touche = state.boards[player_num].board[x][y]
+		// Là, on va enfin pouvoir jouer
+		state.currentPlayer = 1 - player_num
+		let navire_touche = state.boards[player_num].board[x][y]
 
-	// Si on ne touche pas de navire :
-	if (navire_touche == -1) {
+		// Si on ne touche pas de navire :
+		if (navire_touche == -1) {
+			setGameData (state, gameId);
+			return 200, {"kill": false, "hit": false};  // Plouf
+		}
+
+		// Sinon :
+		// la case est marquée comme vide
+		state.boards[player_num].board[x][y] = -1
+		state.boards[player_num].ships[navire_touche] -= 1
+
 		setGameData (state, gameId);
-		return 200, {"kill": false, "hit": false};  // Plouf
+		if (state.boards[player_num].ships[navire_touche][0] == 0) {
+			return 200, {"kill": true, "hit": true} // touché coulé
+		}
+		else {
+			return 200, {"kill": false, "hit": true} // touché
+		}
 	}
-
-	// Sinon :
-	// la case est marquée comme vide
-	state.boards[player_num].board[x][y] = -1
-	state.boards[player_num].ships[navire_touche] -= 1
-
-	setGameData (state, gameId);
-	if (state.boards[player_num].ships[navire_touche][0] == 0) {
-		return 200, {"kill": true, "hit": true}
+	catch (GameNotFound) {
+		console.log ("err");
 	}
-	else {
-		return 200, {"kill": false, "hit": true}
-	}
+	
 }
